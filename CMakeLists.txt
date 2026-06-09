@@ -8,3 +8,9 @@ add_executable(
     adownloader
     src/main.cpp
 )
+
+target_include_directories(
+    adownloader
+    PRIVATE
+    E:/vsvs/vcpkg-classic/installed/x64-windows/include
+)
