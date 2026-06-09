@@ -2,6 +2,9 @@
 #include <string>
 #include <fstream>
 
+#include <chrono>
+#include <ctime>
+
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
@@ -13,8 +16,32 @@ namespace http = beast::http;       // from <boost/beast/http.hpp>
 namespace net = boost::asio;        // from <boost/asio.hpp>
 using tcp = net::ip::tcp;           // from <boost/asio/ip/tcp.hpp>
 
+std::string gettime(){
+    std::time_t now = std::time(nullptr);
+
+    std::tm localtime;
+
+    localtime_s(&localtime, &now);
+
+    int hours = localtime.tm_hour;
+    int minutes = localtime.tm_min;
+    int seconds = localtime.tm_sec;
+
+    int milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() % 1000;
+
+    std::string times;
+    times += std::to_string(hours);
+    times += ":";
+    times += std::to_string(minutes);
+    times += ":";
+    times += std::to_string(seconds);
+    times += ":";
+    times += std::to_string(milliseconds);
+    return times;
+}
+
 void download(const std::string& url, const std::string& dwnpath){
-    std::cout << "downloading " << url << "\n";
+    std::cout << "time:" << gettime() << " downloading " << url << "\n";
 
     int protocolpos = url.find("://");
 
@@ -66,7 +93,7 @@ void download(const std::string& url, const std::string& dwnpath){
 
         if (res.result_int() != 200)
         {
-            std::cout << "server code isnt 200: " << res.result_int() << "\n";
+            std::cout << "time:" << gettime() << " server code isnt 200: " << res.result_int() << "\n";
             return;
         }
 
@@ -77,6 +104,8 @@ void download(const std::string& url, const std::string& dwnpath){
         out << beast::buffers_to_string(res.body().data());
 
         out.close();
+
+        std::cout << "time:" << gettime() << " downloading ended" << filename << "\n";
 
         beast::error_code ec;
         stream.socket().shutdown(tcp::socket::shutdown_both, ec);
@@ -94,6 +123,9 @@ void download(const std::string& url, const std::string& dwnpath){
 }
 
 int main(int argc, char* argv[]){
+
+    std::cout << "time:" << gettime() << " programm start\n";
+
     if (argc != 4) {
         std::cout << "Not enough parameters\n";
         return 0;
@@ -130,5 +162,8 @@ int main(int argc, char* argv[]){
     }
 
     delete[] urls;
+
+    std::cout << "time:" << gettime() << " programm end\n";
+
     return 0;
 }
